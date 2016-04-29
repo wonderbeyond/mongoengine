@@ -705,6 +705,17 @@ class BaseDocument(object):
                         del data[field.db_field]
                 except (AttributeError, ValueError), e:
                     errors_dict[field_name] = e
+            elif '.' in field.db_field:
+                try:
+                    value = data
+                    dot_attrs = field.db_field.split('.')
+                    for attr in dot_attrs:
+                        value = value[attr]
+                except KeyError:
+                    data[field_name] = None
+                else:
+                    data[field_name] = (value if value is None
+                                        else field.to_python(value))
             elif field.default:
                 default = field.default
                 if callable(default):
